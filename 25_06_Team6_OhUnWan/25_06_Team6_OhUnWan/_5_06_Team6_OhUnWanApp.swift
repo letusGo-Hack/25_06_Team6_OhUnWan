@@ -11,7 +11,7 @@ import HealthKitUI
 
 @main
 struct _5_06_Team6_OhUnWanApp: App {
-    private let healthStore = HealthStore.shared.store
+    private let healthStore = HealthStore.shared.healthStore
 
     @State var triggerMedicationsAuthorization: Bool = false
     @State var healthDataAuthorized: Bool?

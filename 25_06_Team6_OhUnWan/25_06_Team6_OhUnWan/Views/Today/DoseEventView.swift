@@ -21,7 +21,7 @@ struct DoseEventView: View {
 
     @State private var triggerSymptomAuthorization: Bool = false
     @AppStorage("healthSymptomDataAuthorized") private var healthSymptomDataAuthorized: Bool = false
-    private let healthStore = HealthStore.shared.store
+    private let healthStore = HealthStore.shared.healthStore
 
     private let symptomTypes = Set(symptomTypeIdentifiers.compactMap {
         HKCategoryType.categoryType(forIdentifier: $0)

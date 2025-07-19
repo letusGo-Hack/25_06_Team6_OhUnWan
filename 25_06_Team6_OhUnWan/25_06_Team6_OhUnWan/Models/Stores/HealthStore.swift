@@ -9,25 +9,26 @@ import HealthKit
 import Combine
 
 /// A reference to the shared `HKHealthStore` for views to use.
-@Observable @MainActor
-final class HealthStore {
+@MainActor
+final class HealthStore: ObservableObject {
+
     static let shared: HealthStore = HealthStore()
 
-    let store = HKHealthStore()
+    let healthStore = HKHealthStore()
+
+    @Published var workouts: [Workout] = []
+    @Published var heartRateData: [HeartRate] = []
+
+    private let typesToRead: Set<HKObjectType> = [
+        HKObjectType.workoutType(),
+        HKObjectType.quantityType(forIdentifier: .heartRate)!
+    ]
 
     private init() { }
 
-    var workouts: [Workout] = []
-    var heartRateData: [HeartRate] = []
-
     func requestActivityAuthorization() async -> Bool {
         do {
-            try await store.requestAuthorization(
-                toShare: [], read: [
-                    HKObjectType.workoutType(),
-                    HKObjectType.quantityType(forIdentifier: .heartRate)!
-                ]
-            )
+            try await healthStore.requestAuthorization(toShare: [], read: typesToRead)
             return true
         } catch {
             print("Error requesting HealthKit authorization: \(error.localizedDescription)")
@@ -38,46 +39,48 @@ final class HealthStore {
     func fetchActivityData() async {
         // Fetch last 7 days of workouts
         let calendar = Calendar.current
-        let current = Date()
-        let startDate = calendar.date(byAdding: .day, value: -7, to: current)!
-
-        async let workoutSamples = try await HKSampleQueryDescriptor(
-            predicates: [
-                .workout(HKQuery.predicateForSamples(
-                    withStart: startDate,
-                    end: current, options: .strictStartDate)
-                )
-            ],
-            sortDescriptors: []
-        ).result(for: store)
-
-        async let heartRateSamples = HKSampleQueryDescriptor(
-            predicates: [.quantitySample(
-                type: HKQuantityType(.heartRate),
-                predicate: HKQuery.predicateForSamples(
-                    withStart: calendar.date(byAdding: .day, value: -1, to: current),
-                    end: current, options: .strictStartDate)
-            )
-            ],
-            sortDescriptors: [.init(\.startDate, order: .reverse)]
-        ).result(for: store)
-
-        do {
-            self.workouts = try await workoutSamples.map { workout in
-                Workout(activityName: workout.workoutActivityType.name,
-                        startDate: workout.startDate,
-                        endDate: workout.endDate,
-                        duration: workout.duration,
-                        caloriesBurned: workout.statistics(for: HKQuantityType(.activeEnergyBurned))?.sumQuantity()?.doubleValue(for: .kilocalorie())
-                )
+        let startDate = calendar.date(byAdding: .day, value: -7, to: Date())!
+        let endDate = Date()
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+        
+        let workoutQuery = HKSampleQuery(sampleType: .workoutType(), predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { [weak self] (_, samples, error) in
+            guard let self = self, let workouts = samples as? [HKWorkout], error == nil else {
+                print("Error fetching workouts: \(error?.localizedDescription ?? "Unknown error")")
+                return
             }
+            
+            DispatchQueue.main.async {
 
-            self.heartRateData = try await heartRateSamples.map { sample in
-                HeartRate(date: sample.startDate, value: sample.quantity.doubleValue(for: HKUnit.count().unitDivided(by: .minute())))
+                self.workouts = workouts.map { workout in
+                    Workout(activityName: workout.workoutActivityType.name,
+                            startDate: workout.startDate,
+                            endDate: workout.endDate,
+                            duration: workout.duration,
+                            caloriesBurned: workout.statistics(for: HKQuantityType(.activeEnergyBurned))?.sumQuantity()?.doubleValue(for: .kilocalorie())
+                    )
+                }
             }
-        } catch {
-            print("Error fetching data: \(error.localizedDescription)")
         }
+        
+        healthStore.execute(workoutQuery)
+
+        // Fetch last 24 hours of heart rate data
+        let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate)!
+        let heartRatePredicate = HKQuery.predicateForSamples(withStart: calendar.date(byAdding: .day, value: -1, to: Date()), end: Date(), options: .strictStartDate)
+        let heartRateQuery = HKSampleQuery(sampleType: heartRateType, predicate: heartRatePredicate, limit: HKObjectQueryNoLimit, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]) { [weak self] (_, samples, error) in
+            guard let self = self, let heartRateSamples = samples as? [HKQuantitySample], error == nil else {
+                print("Error fetching heart rate data: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.heartRateData = heartRateSamples.map { sample in
+                    HeartRate(date: sample.startDate, value: sample.quantity.doubleValue(for: HKUnit.count().unitDivided(by: .minute())))
+                }
+            }
+        }
+        
+        healthStore.execute(heartRateQuery)
     }
 }
 

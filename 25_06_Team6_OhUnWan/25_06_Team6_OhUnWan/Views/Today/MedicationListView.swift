@@ -38,8 +38,8 @@ struct MedicationListView: View {
                         ForEach(medicationProvider.toTakeTodayMedicationConcepts) { concept in
                             MedicationView(annotatedMedicationConcept: concept,
                                            doseEventProvider: DoseEventProvider(healthStore:
-                                                                                    HealthStore.shared.store,
-
+                                                                                    HealthStore.shared.healthStore,
+                                                                                
                                                                                 annotatedMedicationConcept: concept))
                             .environment(medicationProvider)
                         }
@@ -57,7 +57,7 @@ struct MedicationListView: View {
                         ForEach(medicationProvider.takenTodayMedicationConcepts) { concept in
                             MedicationView(annotatedMedicationConcept: concept,
                                            doseEventProvider: DoseEventProvider(healthStore:
-                                                                                    HealthStore.shared.store,
+                                                                                    HealthStore.shared.healthStore,
                                                                                 
                                                                                 annotatedMedicationConcept: concept))
                             .environment(medicationProvider)

@@ -26,7 +26,7 @@ extension HKUserAnnotatedMedication {
 
 /// A class that provides access to the list of active and archived user-authorized medication concepts.
 @Observable @MainActor class MedicationProvider {
-    let healthStore = HealthStore.shared.store
+    let healthStore = HealthStore.shared.healthStore
     var activeMedicationConcepts: [AnnotatedMedicationConcept] = []
     var takenTodayMedicationConcepts: [AnnotatedMedicationConcept] = []
     var toTakeTodayMedicationConcepts: [AnnotatedMedicationConcept] = []
