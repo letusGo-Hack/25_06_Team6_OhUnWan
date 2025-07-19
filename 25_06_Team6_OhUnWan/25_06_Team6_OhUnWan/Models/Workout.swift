@@ -14,6 +14,7 @@ struct Workout: Identifiable {
     let endDate: Date
     let duration: TimeInterval
     let caloriesBurned: Double?
+    let averageHeartRate: Double?
 
     var formattedDuration: String {
         let hours = Int(duration) / 3600      // 시간 계산
