@@ -22,7 +22,7 @@ struct TabsView: View {
     @Binding var toggleHealthDataAuthorization: Bool
     @Binding var healthDataAuthorized: Bool?
 
-    var healthStore: HKHealthStore { HealthStore.shared.healthStore }
+    var healthStore: HKHealthStore { HealthStore.shared.store }
     @State private var selectedTabKind: TabKind = .today
 
     init(toggleHealthDataAuthorization: Binding<Bool>,
