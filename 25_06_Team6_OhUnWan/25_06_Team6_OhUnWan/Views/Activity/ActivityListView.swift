@@ -9,77 +9,85 @@ import SwiftUI
 import FoundationModels
 
 struct ActivityListView: View {
-    // AI 분석을 위한 상태 변수 추가 (UI용)
     @Environment(HealthStore.self) var healthStore
     @State private var foundationModelResponse: String = ""
     @State private var isLoadingAI: Bool = false
     @State var foundationModelsService = FoundationModelsService {
         "You are personal trainer. give me an harsh advice!"
     }
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading) {
-                // 활동 현황 보기 버튼
-                NavigationLink(destination: ActivityView()) {
+        List {
+            Section(header: Text("AI 건강 코칭")
+                .textCase(nil)
+                .font(.title3)
+                .fontWeight(.medium)
+                .fontDesign(.rounded)
+                .padding(4)
+            ) {
+                if isLoadingAI {
+                    HStack {
+                        ProgressView()
+                        Text("AI가 분석 중입니다...")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                } else {
+                    if !foundationModelResponse.isEmpty {
+                        Text(foundationModelResponse)
+                            .font(.body)
+                            .foregroundColor(.blue)
+                            .padding()
+                    }
+                }
+                
+                Button(action: {
+                    analyzeActivityWithAI()
+                }) {
                     HStack {
                         Spacer()
-                        Image(systemName: "figure.run")
-                        Text("활동 현황 보기")
+                        Image(systemName: "sparkles")
+                        Text("오늘 활동 현황 분석하기")
                         Spacer()
                     }
                     .font(.headline)
                     .padding()
-                    .background(Color.blue)
+                    .background(Color.accentColor)
                     .foregroundColor(.white)
                     .cornerRadius(10)
                 }
-                .padding(.bottom)
-                
-                // AI 건강 코칭 섹션 추가
-                Section(header: Text("AI 건강 코칭")
-                    .textCase(nil)
-                    .font(.title3)
-                    .fontWeight(.medium)
-                    .fontDesign(.rounded)
-                    .padding(4)
-                ) {
-                    if isLoadingAI {
-                        HStack {
-                            ProgressView()
-                            Text("AI가 분석 중입니다...")
-                                .foregroundColor(.secondary)
-                        }
-                        .padding()
-                    } else {
-                        if !foundationModelResponse.isEmpty {
-                            Text(foundationModelResponse)
-                                .font(.body)
-                                .foregroundColor(.blue)
-                                .padding()
+                .disabled(isLoadingAI)
+            }
+
+            Section(header: Text("최근 운동 (최근 7일)")) {
+                if healthStore.workouts.isEmpty {
+                    Text("운동 기록이 없습니다.")
+                } else {
+                    ForEach(healthStore.workouts) { workout in
+                        VStack(alignment: .leading) {
+                            Text(workout.activityName)
+                                .font(.headline)
+                            Text("시간: \(workout.formattedDuration)")
+                            if let calories = workout.caloriesBurned {
+                                Text("칼로리: \(String(format: "%.0f", calories)) kcal")
+                            }
+                            if let avgHeartRate = workout.averageHeartRate {
+                                Text("평균 심박수: \(String(format: "%.0f", avgHeartRate)) bpm")
+                            }
+                            Text(workout.startDate, style: .date)
                         }
                     }
-                    
-                    Button(action: {
-                        analyzeActivityWithAI()
-                    }) {
-                        HStack {
-                            Spacer()
-                            Image(systemName: "sparkles")
-                            Text("오늘 활동 현황 분석하기")
-                            Spacer()
-                        }
-                        .font(.headline)
-                        .padding()
-                        .background(Color.accentColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                    }
-                    .disabled(isLoadingAI)
                 }
             }
-            .padding()
         }
         .navigationTitle(.activityViewDisplayTitle)
+        .environment(\.locale, Locale(identifier: "ko_KR"))
+        .task {
+            guard await healthStore.requestActivityAuthorization() else {
+                return
+            }
+            await healthStore.fetchActivityData()
+        }
     }
     
     private func analyzeActivityWithAI() {
