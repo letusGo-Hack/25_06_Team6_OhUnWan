@@ -38,13 +38,13 @@ final class HealthStore {
     func fetchActivityData() async {
         // Fetch last 7 days of workouts
         let calendar = Calendar.current
-        let startDate = calendar.date(byAdding: .day, value: -7, to: Date())!
         let current = Date()
+        let startDate = calendar.date(byAdding: .day, value: -7, to: current)!
 
         async let workoutSamples = try await HKSampleQueryDescriptor(
             predicates: [
                 .workout(HKQuery.predicateForSamples(
-                    withStart: calendar.date(byAdding: .day, value: -7, to: current)!,
+                    withStart: startDate,
                     end: current, options: .strictStartDate)
                 )
             ],
