@@ -135,7 +135,8 @@ struct MedicationListView: View {
                         .medication(
                             toTakeToday: toTake,
                             takenToday: taken
-                        )
+                        ),
+                        options: .init(temperature: .random(in: 0...2))
                     )
                 self.foundationModelResponse = response
             } catch {
