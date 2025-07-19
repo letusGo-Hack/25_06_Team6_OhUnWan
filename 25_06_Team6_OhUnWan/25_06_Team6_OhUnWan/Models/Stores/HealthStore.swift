@@ -49,31 +49,28 @@ final class HealthStore {
             return
         }
 
-        var workoutData: [Workout] = []
+        let workoutData = workouts.map { workout -> Workout in
+            let heartRateUnit = HKUnit.count().unitDivided(by: .minute())
+            let averageHeartRate = workout.statistics(for: HKQuantityType(.heartRate))?
+                .averageQuantity()?
+                .doubleValue(for: heartRateUnit)
+            
+            let caloriesBurned = workout.statistics(for: HKQuantityType(.activeEnergyBurned))?
+                .sumQuantity()?
+                .doubleValue(for: .kilocalorie())
 
-        for workout in workouts {
-            let heartRatePredicate = HKQuery.predicateForSamples(withStart: workout.startDate, end: workout.endDate, options: .strictStartDate)
-            let heartRateSamples = try? await HKSampleQueryDescriptor(
-                predicates: [.quantitySample(type: HKQuantityType(.heartRate), predicate: heartRatePredicate)],
-                sortDescriptors: []
-            ).result(for: store)
-
-            let heartRateValues = heartRateSamples?.map { $0.quantity.doubleValue(for: HKUnit.count().unitDivided(by: .minute())) }
-            let averageHeartRate = heartRateValues?.isEmpty == false ? (heartRateValues!.reduce(0, +) / Double(heartRateValues!.count)) : nil
-
-            let workoutDetail = Workout(
+            return Workout(
                 activityName: workout.workoutActivityType.name,
                 startDate: workout.startDate,
                 endDate: workout.endDate,
                 duration: workout.duration,
-                caloriesBurned: workout.statistics(for: HKQuantityType(.activeEnergyBurned))?.sumQuantity()?.doubleValue(for: .kilocalorie()),
+                caloriesBurned: caloriesBurned,
                 averageHeartRate: averageHeartRate
             )
-            workoutData.append(workoutDetail)
         }
         
         self.workouts = workoutData
-        self.heartRateData = [] // Clear the separate heart rate data
+        self.heartRateData = [] // Clear the separate heart rate data, as it's no longer needed
     }
 }
 
