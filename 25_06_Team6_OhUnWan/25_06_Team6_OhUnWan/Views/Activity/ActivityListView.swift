@@ -18,13 +18,7 @@ struct ActivityListView: View {
 
     var body: some View {
         List {
-            Section(header: Text("AI 건강 코칭")
-                .textCase(nil)
-                .font(.title3)
-                .fontWeight(.medium)
-                .fontDesign(.rounded)
-                .padding(4)
-            ) {
+            Section {
                 if isLoadingAI {
                     HStack {
                         ProgressView()
@@ -57,9 +51,16 @@ struct ActivityListView: View {
                     .cornerRadius(10)
                 }
                 .disabled(isLoadingAI)
+            } header: {
+                Text("AI 건강 코칭")
+                    .textCase(nil)
+                    .font(.title3)
+                    .fontWeight(.medium)
+                    .fontDesign(.rounded)
+                    .padding(4)
             }
 
-            Section(header: Text("최근 운동 (최근 7일)")) {
+            Section {
                 if healthStore.workouts.isEmpty {
                     Text("운동 기록이 없습니다.")
                 } else {
@@ -78,6 +79,8 @@ struct ActivityListView: View {
                         }
                     }
                 }
+            } header: {
+                Text("최근 운동 (최근 7일)")
             }
         }
         .navigationTitle(.activityViewDisplayTitle)
@@ -102,7 +105,7 @@ struct ActivityListView: View {
                         .workout(workouts),
                         options: .init(temperature: .random(in: 0...2))
                     )
-                foundationModelResponse = response
+                foundationModelResponse = response.answer + "\n\ntemperature: \(response.temperature.map { "\($0)" } ?? "none" )"
             } catch {
                 foundationModelResponse = "오류가 발생했습니다: \(error.localizedDescription)"
             }

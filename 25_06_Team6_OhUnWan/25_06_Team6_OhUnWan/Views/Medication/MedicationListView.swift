@@ -23,13 +23,7 @@ struct MedicationListView: View {
         let medicationProvider = healthStore.medicationProvider
         ScrollView {
             VStack(alignment: .leading) {
-                Section(header: Text("To Take Today")
-                    .textCase(nil)
-                    .font(.title3)
-                    .fontWeight(.medium)
-                    .fontDesign(.rounded)
-                    .padding(4)
-                ) {
+                Section {
                     if medicationProvider.toTakeTodayMedicationConcepts.isEmpty &&
                         medicationProvider.takenTodayMedicationConcepts.isEmpty {
                         Text("No active medications.")
@@ -48,16 +42,17 @@ struct MedicationListView: View {
                             )
                         }
                     }
+                } header: {
+                    Text("To Take Today")
+                        .textCase(nil)
+                        .font(.title3)
+                        .fontWeight(.medium)
+                        .fontDesign(.rounded)
+                        .padding(4)
                 }
-                
-                Section(header: Text("Taken Today")
-                    .textCase(nil)
-                    .font(.title3)
-                    .fontWeight(.medium)
-                    .fontDesign(.rounded)
-                    .padding(4)
-                ) {
-                    if !medicationProvider.takenTodayMedicationConcepts.isEmpty {
+
+                if !medicationProvider.takenTodayMedicationConcepts.isEmpty {
+                    Section {
                         ForEach(medicationProvider.takenTodayMedicationConcepts) { concept in
                             MedicationView(
                                 annotatedMedicationConcept: concept,
@@ -67,17 +62,18 @@ struct MedicationListView: View {
                                 )
                             )
                         }
+                    } header: {
+                        Text("Taken Today")
+                            .textCase(nil)
+                            .font(.title3)
+                            .fontWeight(.medium)
+                            .fontDesign(.rounded)
+                            .padding(4)
                     }
                 }
-                
+
                 // AI 건강 코칭 섹션 추가
-                Section(header: Text("AI 건강 코칭")
-                    .textCase(nil)
-                    .font(.title3)
-                    .fontWeight(.medium)
-                    .fontDesign(.rounded)
-                    .padding(4)
-                ) {
+                Section {
                     if isLoadingAI {
                         HStack {
                             ProgressView()
@@ -110,9 +106,14 @@ struct MedicationListView: View {
                         .cornerRadius(10)
                     }
                     .disabled(isLoadingAI)
+                } header: {
+                    Text("AI 건강 코칭")
+                        .textCase(nil)
+                        .font(.title3)
+                        .fontWeight(.medium)
+                        .fontDesign(.rounded)
+                        .padding(4)
                 }
-                
-                
             }
             .padding()
             .task {
@@ -138,7 +139,7 @@ struct MedicationListView: View {
                         ),
                         options: .init(temperature: .random(in: 0...2))
                     )
-                self.foundationModelResponse = response
+                self.foundationModelResponse = response.answer + "\n\ntemperature: \(response.temperature.map { "\($0)" } ?? "none" )"
             } catch {
                 self.foundationModelResponse = "오류가 발생했습니다: \(error.localizedDescription)"
             }

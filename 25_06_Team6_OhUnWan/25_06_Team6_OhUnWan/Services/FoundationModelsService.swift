@@ -28,22 +28,26 @@ final actor FoundationModelsService {
         self.session = try LanguageModelSession(guardrails: .developerProvided, instructions: instructions)
     }
 
-    func request(_ prompt: Prompt, options: GenerationOptions = .init()) async throws -> String {
+    func request(_ prompt: Prompt, options: GenerationOptions = .init()) async throws -> Result {
         guard !session.isResponding else {
             throw ServiceError.sessionInProgress
         }
 
         do {
             let response = try await session.respond(to: prompt, options: options)
-            return response.content
+            return .init(answer: response.content, temperature: options.temperature)
         } catch {
             throw error
         }
-
     }
 }
 
 extension FoundationModelsService {
+    struct Result {
+        let answer: String
+        let temperature: Double?
+    }
+
     enum ServiceError: Error {
         case sessionInProgress
     }
