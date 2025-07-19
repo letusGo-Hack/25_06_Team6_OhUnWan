@@ -130,8 +130,13 @@ struct MedicationListView: View {
                 let toTake = medicationProvider.toTakeTodayMedicationConcepts.map { $0.name }
                 let taken = medicationProvider.takenTodayMedicationConcepts.map { $0.name }
                 
-                let response = try await foundationModelsService.processMedicationData(toTakeToday:
-                                                                                        toTake, takenToday: taken)
+                let response = try await foundationModelsService
+                    .request(
+                        .medication(
+                            toTakeToday: toTake,
+                            takenToday: taken
+                        )
+                    )
                 self.foundationModelResponse = response
             } catch {
                 self.foundationModelResponse = "오류가 발생했습니다: \(error.localizedDescription)"

@@ -28,22 +28,9 @@ final actor FoundationModelsService {
         self.session = try LanguageModelSession(guardrails: .developerProvided, instructions: instructions)
     }
 
-    func processMedicationData(toTakeToday: [String], takenToday: [String]) async throws -> String {
+    func request(_ prompt: Prompt) async throws -> String {
         guard !session.isResponding else {
             throw ServiceError.sessionInProgress
-        }
-        // 1. 오늘 날짜와 복약 데이터를 기반으로 명령어 문자열 생성
-        let today = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none)
-        let takenMeds = takenToday.joined(separator: ", ")
-        let notTakenMeds = toTakeToday.joined(separator: ", ")
-
-        let prompt = Prompt {
-            "Today is \(today)."
-
-            "I have taken these medications: \(takenMeds.isEmpty ? "None" : takenMeds)."
-            "I still need to take these medications: \(notTakenMeds.isEmpty ? "None" : notTakenMeds)."
-
-            "Based on this information, provide a brief, encouraging, and helpful message in Korean."
         }
 
         do {
@@ -72,5 +59,23 @@ private extension LanguageModelSession.Guardrails {
         }
 
         return guardrails
+    }
+}
+
+extension Prompt {
+    static func medication(toTakeToday: [String], takenToday: [String]) -> Self {
+        // 1. 오늘 날짜와 복약 데이터를 기반으로 명령어 문자열 생성
+        let today = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none)
+        let takenMeds = takenToday.joined(separator: ", ")
+        let notTakenMeds = toTakeToday.joined(separator: ", ")
+
+        return Prompt {
+            "Today is \(today)."
+
+            "I have taken these medications: \(takenMeds.isEmpty ? "None" : takenMeds)."
+            "I still need to take these medications: \(notTakenMeds.isEmpty ? "None" : notTakenMeds)."
+
+            "Based on this information, provide a brief, encouraging, and helpful message in Korean."
+        }
     }
 }
