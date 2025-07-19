@@ -22,19 +22,6 @@ extension HKUserAnnotatedMedication {
                                           relatedCodings: medication.relatedCodings,
                                           isArchived: false)
     }
-
-    /// Map a list of archived medication concepts.
-    var archivedAnnotatedMedicationConcept: AnnotatedMedicationConcept {
-        var name = medication.displayText
-            if let nickname, !nickname.isEmpty {
-                name = nickname
-        }
-
-        return AnnotatedMedicationConcept(conceptIdentifier: medication.identifier,
-                                          name: name,
-                                          relatedCodings: medication.relatedCodings,
-                                          isArchived: true)
-    }
 }
 
 /// A class that provides access to the list of active and archived user-authorized medication concepts.
@@ -43,7 +30,6 @@ extension HKUserAnnotatedMedication {
     var activeMedicationConcepts: [AnnotatedMedicationConcept] = []
     var takenTodayMedicationConcepts: [AnnotatedMedicationConcept] = []
     var toTakeTodayMedicationConcepts: [AnnotatedMedicationConcept] = []
-    var archivedMedicationConcepts: [AnnotatedMedicationConcept] = []
 
     init() {
         Task {
@@ -57,7 +43,6 @@ extension HKUserAnnotatedMedication {
             /// Performs a query to HealthKit to retrieve the list of active and archived medication concepts.
             let annotatedMedicationConcepts = try await fetchMedications()
             activeMedicationConcepts = annotatedMedicationConcepts.filter { !$0.isArchived }.map { $0.activeAnnotatedMedicationConcept }
-            archivedMedicationConcepts = annotatedMedicationConcepts.filter { $0.isArchived }.map { $0.archivedAnnotatedMedicationConcept }
 
             takenTodayMedicationConcepts.removeAll()
             toTakeTodayMedicationConcepts.removeAll()
