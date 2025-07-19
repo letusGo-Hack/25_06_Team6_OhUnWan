@@ -15,16 +15,16 @@ struct _5_06_Team6_OhUnWanApp: App {
 
     @State var triggerMedicationsAuthorization: Bool = false
     @State var healthDataAuthorized: Bool?
-    @State private var selectedTabKind: TabKind = .today
+    @State private var selectedTabKind: TabKind = .medication
 
     var body: some Scene {
         WindowGroup {
             TabView(selection: $selectedTabKind) {
-                Tab(.todayViewDisplayTitle, systemImage: "calendar.day.timeline.leading", value: TabKind.today) {
+                Tab(.medicationViewDisplayTitle, systemImage: "calendar.day.timeline.leading", value: TabKind.medication) {
                     NavigationStack {
                         HealthKitAuthorizationGatedView(authorized: $healthDataAuthorized) {
                             MedicationListView()
-                                .navigationTitle(.todayViewDisplayTitle)
+                                .navigationTitle(.medicationViewDisplayTitle)
                         }
                     }
                 }
@@ -56,11 +56,6 @@ struct _5_06_Team6_OhUnWanApp: App {
 }
 
 private enum TabKind: Hashable {
-    case today
+    case medication
     case activity
-}
-
-extension LocalizedStringKey {
-    static let todayViewDisplayTitle: LocalizedStringKey = "Today"
-    static let activityViewDisplayTitle: LocalizedStringKey = "Activity"
 }
