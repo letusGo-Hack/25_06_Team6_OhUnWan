@@ -31,7 +31,7 @@ struct _5_06_Team6_OhUnWanApp: App {
                 Tab(.activityViewDisplayTitle, systemImage: "figure.run", value: TabKind.activity) {
                     NavigationStack {
                         HealthKitAuthorizationGatedView(authorized: $healthDataAuthorized) {
-                            ActivityView()
+                            ActivityListView()
                         }
                     }
                 }
