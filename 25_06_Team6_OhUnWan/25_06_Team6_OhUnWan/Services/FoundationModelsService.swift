@@ -78,4 +78,22 @@ extension Prompt {
             "Based on this information, provide a brief, encouraging, and helpful message in Korean."
         }
     }
+
+    static func workout(_ workouts: [Workout]) -> Self {
+        let today = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none)
+
+        return Prompt {
+            "Today is \(today)."
+            if workouts.isEmpty {
+                "I didn't do any workout Today"
+            } else {
+                for workout in workouts {
+                    "I did \(workout.activityName) for \(workout.duration) seconds, with \(workout.caloriesBurned ?? 0) kcal burned\n"
+                }
+            }
+
+
+            "Based on this information, provide a brief, encouraging, and helpful message in Korean."
+        }
+    }
 }

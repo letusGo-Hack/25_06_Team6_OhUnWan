@@ -6,12 +6,16 @@
 //
 
 import SwiftUI
+import FoundationModels
 
 struct ActivityListView: View {
     // AI 분석을 위한 상태 변수 추가 (UI용)
+    @Environment(HealthStore.self) var healthStore
     @State private var foundationModelResponse: String = ""
     @State private var isLoadingAI: Bool = false
-    
+    @State var foundationModelsService = FoundationModelsService {
+        "You are personal trainer. give me an harsh advice!"
+    }
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
@@ -81,11 +85,20 @@ struct ActivityListView: View {
     private func analyzeActivityWithAI() {
         isLoadingAI = true
         foundationModelResponse = ""
-        
-        // 임시로 UI만 표시하는 더미 응답
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.foundationModelResponse = "오늘의 활동 현황을 분석한 결과:\n\n• 운동 시간: 30분\n• 걸음 수: 8,500보\n• 심박수: 평균 72bpm\n\n전반적으로 적절한 활동량을 유지하고 계십니다. 규칙적인 운동을 계속하시면 건강에 도움이 될 것입니다."
-            self.isLoadingAI = false
+        Task {
+            do {
+                let workouts = healthStore.workouts
+
+                let response = try await foundationModelsService
+                    .request(
+                        .workout(workouts),
+                        options: .init(temperature: .random(in: 0...2))
+                    )
+                foundationModelResponse = response
+            } catch {
+                foundationModelResponse = "오류가 발생했습니다: \(error.localizedDescription)"
+            }
+            isLoadingAI = false
         }
     }
 }
