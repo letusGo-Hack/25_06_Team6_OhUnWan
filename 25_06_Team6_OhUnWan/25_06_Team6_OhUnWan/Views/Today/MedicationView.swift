@@ -30,10 +30,19 @@ struct MedicationView: View {
                         .foregroundStyle(.yellow)
                         .padding(10)
                         .font(.system(size: 24, weight: .bold, design: .monospaced))
+                        .symbolEffect(.wiggle)
 
-                    Text(annotatedMedicationConcept.name)
-                        .font(.headline)
-                        .fontDesign(.rounded)
+                    VStack(alignment: .leading) {
+                        Text(annotatedMedicationConcept.name)
+                            .font(.headline)
+                            .fontDesign(.rounded)
+
+                        if let lastDose = doseEventProvider.lastDoseLogged {
+                            Text("복용 시간: \(lastDose.timeLoggedDisplayString)")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                    }
 
                     Spacer()
 
