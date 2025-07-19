@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UIKit
+import FoundationModels
 
 struct MedicationListView: View {
     @Environment(HealthStore.self) var healthStore
@@ -14,8 +15,10 @@ struct MedicationListView: View {
     // AI 분석을 위한 상태 변수 추가
     @State private var foundationModelResponse: String = ""
     @State private var isLoadingAI: Bool = false
-    private let foundationModelsService = FoundationModelsService()
-    
+    private let foundationModelsService = FoundationModelsService {
+        "You are a phamacist. give me an useful advice for Medicine!"
+    }
+
     var body: some View {
         let medicationProvider = healthStore.medicationProvider
         ScrollView {
