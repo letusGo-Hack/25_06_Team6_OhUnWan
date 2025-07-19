@@ -43,18 +43,6 @@ struct MedicationView: View {
                                 .foregroundColor(.white.opacity(0.8))
                         }
                     }
-
-                    Spacer()
-
-                    NavigationLink {
-                        DoseEventView(annotatedMedicationConcept: annotatedMedicationConcept,
-                                      doseEventProvider: doseEventProvider)
-                    } label: {
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.white)
-                            .padding(30)
-                            .clipShape(Circle())
-                    }
                 }
                 .padding()
             }
