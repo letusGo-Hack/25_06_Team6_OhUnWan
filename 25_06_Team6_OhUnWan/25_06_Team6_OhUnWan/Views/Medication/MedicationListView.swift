@@ -15,7 +15,7 @@ struct MedicationListView: View {
     // AI 분석을 위한 상태 변수 추가
     @State private var foundationModelResponse: String = ""
     @State private var isLoadingAI: Bool = false
-    private let foundationModelsService = FoundationModelsService {
+    @State var foundationModelsService = FoundationModelsService {
         "You are a phamacist. give me an useful advice for Medicine!"
     }
 
