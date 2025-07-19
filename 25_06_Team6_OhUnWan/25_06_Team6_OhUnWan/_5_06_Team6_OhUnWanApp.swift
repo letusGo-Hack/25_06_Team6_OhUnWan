@@ -20,7 +20,7 @@ struct _5_06_Team6_OhUnWanApp: App {
     var body: some Scene {
         WindowGroup {
             TabView(selection: $selectedTabKind) {
-                Tab(.medicationViewDisplayTitle, systemImage: "calendar.day.timeline.leading", value: TabKind.medication) {
+                Tab(.medicationViewDisplayTitle, systemImage: "capsule.lefthalf.filled", value: TabKind.medication) {
                     NavigationStack {
                         HealthKitAuthorizationGatedView(authorized: $healthDataAuthorized) {
                             MedicationListView()
