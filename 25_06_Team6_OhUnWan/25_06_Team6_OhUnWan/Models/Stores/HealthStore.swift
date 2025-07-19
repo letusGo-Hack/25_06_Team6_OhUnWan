@@ -11,11 +11,12 @@ import Combine
 /// A reference to the shared `HKHealthStore` for views to use.
 @Observable @MainActor
 final class HealthStore {
-    static let shared: HealthStore = HealthStore()
-
     let store = HKHealthStore()
+    let medicationProvider: MedicationProvider
 
-    private init() { }
+    init() {
+        self.medicationProvider = .init(store: store)
+    }
 
     var workouts: [Workout] = []
     var heartRateData: [HeartRate] = []

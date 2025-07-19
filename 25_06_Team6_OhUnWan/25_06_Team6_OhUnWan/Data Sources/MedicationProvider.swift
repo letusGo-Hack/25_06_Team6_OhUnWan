@@ -26,29 +26,31 @@ extension HKUserAnnotatedMedication {
 
 /// A class that provides access to the list of active and archived user-authorized medication concepts.
 @Observable @MainActor class MedicationProvider {
-    let healthStore = HealthStore.shared.store
     var activeMedicationConcepts: [AnnotatedMedicationConcept] = []
     var takenTodayMedicationConcepts: [AnnotatedMedicationConcept] = []
     var toTakeTodayMedicationConcepts: [AnnotatedMedicationConcept] = []
 
-    init() {
+    init(store: HKHealthStore) {
         Task {
-            await loadDataFromHealthKit()
+            await loadData(from: store)
         }
     }
 
     /// Performs a query to HealthKit to retrieve the list of active and archived medication concepts.
-    func loadDataFromHealthKit() async {
+    func loadData(from store: HKHealthStore) async {
         do {
             /// Performs a query to HealthKit to retrieve the list of active and archived medication concepts.
-            let annotatedMedicationConcepts = try await fetchMedications()
+            let annotatedMedicationConcepts = try await fetchMedications(from: store)
             activeMedicationConcepts = annotatedMedicationConcepts.filter { !$0.isArchived }.map { $0.activeAnnotatedMedicationConcept }
 
             takenTodayMedicationConcepts.removeAll()
             toTakeTodayMedicationConcepts.removeAll()
 
             for concept in activeMedicationConcepts {
-                let taken = await checkIfTakenToday(medicationIdentifier: concept.conceptIdentifier)
+                let taken = await checkIfTakenToday(
+                    medicationIdentifier: concept.conceptIdentifier,
+                    from: store
+                )
                 if taken {
                     takenTodayMedicationConcepts.append(concept)
                 } else {
@@ -60,7 +62,10 @@ extension HKUserAnnotatedMedication {
         }
     }
 
-    private func checkIfTakenToday(medicationIdentifier: HKHealthConceptIdentifier) async -> Bool {
+    private func checkIfTakenToday(
+        medicationIdentifier: HKHealthConceptIdentifier,
+        from store: HKHealthStore
+    ) async -> Bool {
         let medicationPredicate = HKQuery.predicateForMedicationDoseEvent(medicationConceptIdentifier: medicationIdentifier)
 
         let now = Date.now
@@ -73,7 +78,7 @@ extension HKUserAnnotatedMedication {
         let queryDescriptor = HKSampleQueryDescriptor(predicates: [samplePredicate], sortDescriptors: sortDescriptors, limit: 1)
 
         do {
-            let results = try await queryDescriptor.result(for: healthStore)
+            let results = try await queryDescriptor.result(for: store)
             return !results.isEmpty
         } catch {
             print("Error checking if medication was taken today: \(error)")
@@ -82,12 +87,12 @@ extension HKUserAnnotatedMedication {
     }
 
     /// Returns a list of user-authorized `HKUserAnnotatedMedication` objects.
-    func fetchMedications() async throws -> [HKUserAnnotatedMedication] {
+    func fetchMedications(from store: HKHealthStore) async throws -> [HKUserAnnotatedMedication] {
         /// Initialize the new query descriptor for fetching medications.
         let queryDescriptor = HKUserAnnotatedMedicationQueryDescriptor()
 
         /// The results are a list of `HKUserAnnotatedMedications`.
         /// If you supply a predicate or limit, the system returns only objects that match.
-        return try await queryDescriptor.result(for: healthStore)
+        return try await queryDescriptor.result(for: store)
     }
 }

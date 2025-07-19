@@ -11,7 +11,7 @@ import HealthKitUI
 
 struct DoseEventView: View {
 
-    @Environment(MedicationProvider.self) private var medicationProvider
+    @Environment(HealthStore.self) var healthStore
     var annotatedMedicationConcept: AnnotatedMedicationConcept
 
     @State private var medicationSideEffects: [SymptomModel] = []
@@ -21,7 +21,6 @@ struct DoseEventView: View {
 
     @State private var triggerSymptomAuthorization: Bool = false
     @AppStorage("healthSymptomDataAuthorized") private var healthSymptomDataAuthorized: Bool = false
-    private let healthStore = HealthStore.shared.store
 
     private let symptomTypes = Set(symptomTypeIdentifiers.compactMap {
         HKCategoryType.categoryType(forIdentifier: $0)
@@ -92,7 +91,7 @@ struct DoseEventView: View {
             .navigationTitle(Text(annotatedMedicationConcept.name))
             .navigationBarTitleDisplayMode(.inline)
         }
-        .healthDataAccessRequest(store: healthStore,
+        .healthDataAccessRequest(store: healthStore.store,
                                  shareTypes: symptomTypes,
                                  readTypes: symptomTypes,
                                  trigger: triggerSymptomAuthorization) { @Sendable result in

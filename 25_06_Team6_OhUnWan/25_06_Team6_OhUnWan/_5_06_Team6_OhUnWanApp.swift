@@ -11,7 +11,7 @@ import HealthKitUI
 
 @main
 struct _5_06_Team6_OhUnWanApp: App {
-    private let healthStore = HealthStore.shared.store
+    @State var healthStore = HealthStore()
 
     @State var triggerMedicationsAuthorization: Bool = false
     @State var healthDataAuthorized: Bool?
@@ -23,10 +23,11 @@ struct _5_06_Team6_OhUnWanApp: App {
             .onAppear {
                 triggerMedicationsAuthorization.toggle()
             }
-            .healthDataAccessRequest(store: healthStore,
-                                     objectType: .userAnnotatedMedicationType(),
-                                     trigger: triggerMedicationsAuthorization,
-                                     completion: { @Sendable result in
+            .healthDataAccessRequest(
+                store: healthStore.store,
+                objectType: .userAnnotatedMedicationType(),
+                trigger: triggerMedicationsAuthorization
+            ) { result in
                 Task { @MainActor in
                     switch result {
                     case .success:
@@ -35,7 +36,7 @@ struct _5_06_Team6_OhUnWanApp: App {
                         print("Error when requesting HealthKit read authorizations: \(error)")
                     }
                 }
-            })
-        }
+            }
+        }.environment(healthStore)
     }
 }

@@ -10,10 +10,10 @@ import SwiftUI
 
 struct EmojiPicker: View {
     let symptomModel: SymptomModel
-    private var healthStore: HKHealthStore { HealthStore.shared.store }
 
     @State private var selectedEmoji: SymptomIntensity?
     @Binding var isSymptomLogged: Bool
+    @Environment(HealthStore.self) var healthStore
 
     @Environment(\.dismiss) var dismiss
 
@@ -76,6 +76,6 @@ struct EmojiPicker: View {
                                              value: emoji.rawValue,
                                              start: Date(),
                                              end: Date())
-        try await healthStore.save(symptomSample)
+        try await healthStore.store.save(symptomSample)
     }
 }

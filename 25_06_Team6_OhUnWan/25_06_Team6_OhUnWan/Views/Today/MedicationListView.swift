@@ -9,15 +9,15 @@ import SwiftUI
 import UIKit
 
 struct MedicationListView: View {
-    
-    @State private var medicationProvider = MedicationProvider()
-    
+    @Environment(HealthStore.self) var healthStore
+
     // AI 분석을 위한 상태 변수 추가
     @State private var foundationModelResponse: String = ""
     @State private var isLoadingAI: Bool = false
     private let foundationModelsService = FoundationModelsService()
     
     var body: some View {
+        let medicationProvider = healthStore.medicationProvider
         ScrollView {
             VStack(alignment: .leading) {
                 Section(header: Text("To Take Today")
@@ -36,12 +36,13 @@ struct MedicationListView: View {
                             .padding()
                     } else {
                         ForEach(medicationProvider.toTakeTodayMedicationConcepts) { concept in
-                            MedicationView(annotatedMedicationConcept: concept,
-                                           doseEventProvider: DoseEventProvider(healthStore:
-                                                                                    HealthStore.shared.store,
-
-                                                                                annotatedMedicationConcept: concept))
-                            .environment(medicationProvider)
+                            MedicationView(
+                                annotatedMedicationConcept: concept,
+                                doseEventProvider: DoseEventProvider(
+                                    healthStore: healthStore.store,
+                                    annotatedMedicationConcept: concept
+                                )
+                            )
                         }
                     }
                 }
@@ -55,12 +56,13 @@ struct MedicationListView: View {
                 ) {
                     if !medicationProvider.takenTodayMedicationConcepts.isEmpty {
                         ForEach(medicationProvider.takenTodayMedicationConcepts) { concept in
-                            MedicationView(annotatedMedicationConcept: concept,
-                                           doseEventProvider: DoseEventProvider(healthStore:
-                                                                                    HealthStore.shared.store,
-                                                                                
-                                                                                annotatedMedicationConcept: concept))
-                            .environment(medicationProvider)
+                            MedicationView(
+                                annotatedMedicationConcept: concept,
+                                doseEventProvider: DoseEventProvider(
+                                    healthStore: healthStore.store,
+                                    annotatedMedicationConcept: concept
+                                )
+                            )
                         }
                     }
                 }
@@ -110,11 +112,8 @@ struct MedicationListView: View {
                 
             }
             .padding()
-            .onAppear {
-                Task {
-                    /// Fetch medication data each time.
-                    await medicationProvider.loadDataFromHealthKit()
-                }
+            .task {
+                await medicationProvider.loadData(from: healthStore.store)
             }
         }
     }
@@ -122,7 +121,7 @@ struct MedicationListView: View {
     private func analyzeMedicationWithAI() {
         isLoadingAI = true
         foundationModelResponse = ""
-        
+        let medicationProvider = healthStore.medicationProvider
         Task {
             do {
                 let toTake = medicationProvider.toTakeTodayMedicationConcepts.map { $0.name }

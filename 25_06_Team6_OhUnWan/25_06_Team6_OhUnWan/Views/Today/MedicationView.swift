@@ -10,7 +10,7 @@ import SwiftUI
 
 struct MedicationView: View {
 
-    @Environment(MedicationProvider.self) private var medicationProvider
+    @Environment(HealthStore.self) var healthStore
     var annotatedMedicationConcept: AnnotatedMedicationConcept
     var doseEventProvider: DoseEventProvider
 
@@ -40,7 +40,6 @@ struct MedicationView: View {
                     NavigationLink {
                         DoseEventView(annotatedMedicationConcept: annotatedMedicationConcept,
                                       doseEventProvider: doseEventProvider)
-                        .environment(medicationProvider)
                     } label: {
                         Image(systemName: "chevron.right")
                             .foregroundColor(.white)
