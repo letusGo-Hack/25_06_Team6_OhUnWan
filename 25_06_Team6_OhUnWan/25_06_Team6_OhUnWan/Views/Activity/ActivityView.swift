@@ -8,7 +8,7 @@ A view that displays activity data from HealthKit.
 import SwiftUI
 
 struct ActivityView: View {
-    @StateObject private var healthStore = HealthStore.shared
+    @State private var healthStore = HealthStore.shared
 
     var body: some View {
         List {
