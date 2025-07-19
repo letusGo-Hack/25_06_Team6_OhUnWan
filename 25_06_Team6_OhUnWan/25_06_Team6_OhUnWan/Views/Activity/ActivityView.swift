@@ -24,21 +24,10 @@ struct ActivityView: View {
                             if let calories = workout.caloriesBurned {
                                 Text("칼로리: \(String(format: "%.0f", calories)) kcal")
                             }
+                            if let avgHeartRate = workout.averageHeartRate {
+                                Text("평균 심박수: \(String(format: "%.0f", avgHeartRate)) bpm")
+                            }
                             Text(workout.startDate, style: .date)
-                        }
-                    }
-                }
-            }
-
-            Section(header: Text("최근 심박수 (최근 24시간)")) {
-                if healthStore.heartRateData.isEmpty {
-                    Text("심박수 데이터가 없습니다.")
-                } else {
-                    ForEach(healthStore.heartRateData) { heartRate in
-                        HStack {
-                            Text("\(String(format: "%.0f", heartRate.value)) bpm")
-                            Spacer()
-                            Text(heartRate.date, style: .time)
                         }
                     }
                 }
@@ -48,7 +37,7 @@ struct ActivityView: View {
         .environment(\.locale, Locale(identifier: "ko_KR"))
         .task {
             guard await healthStore.requestActivityAuthorization() else {
-                return 
+                return
             }
             await healthStore.fetchActivityData()
         }
