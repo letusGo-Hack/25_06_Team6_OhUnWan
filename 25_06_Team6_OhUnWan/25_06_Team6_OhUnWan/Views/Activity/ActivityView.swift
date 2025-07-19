@@ -45,11 +45,11 @@ struct ActivityView: View {
             }
         }
         .navigationTitle(.activityViewDisplayTitle)
-        .onAppear {
-            Task {
-                await healthStore.requestActivityAuthorization()
-                await healthStore.fetchActivityData()
+        .task {
+            guard await healthStore.requestActivityAuthorization() else {
+                return 
             }
+            await healthStore.fetchActivityData()
         }
     }
 }

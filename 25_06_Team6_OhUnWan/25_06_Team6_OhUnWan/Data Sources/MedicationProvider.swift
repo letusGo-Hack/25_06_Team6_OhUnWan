@@ -63,13 +63,11 @@ extension HKUserAnnotatedMedication {
             toTakeTodayMedicationConcepts.removeAll()
 
             for concept in activeMedicationConcepts {
-                if let conceptIdentifier = concept.conceptIdentifier as? HKHealthConceptIdentifier {
-                    let taken = await checkIfTakenToday(medicationIdentifier: conceptIdentifier)
-                    if taken {
-                        takenTodayMedicationConcepts.append(concept)
-                    } else {
-                        toTakeTodayMedicationConcepts.append(concept)
-                    }
+                let taken = await checkIfTakenToday(medicationIdentifier: concept.conceptIdentifier)
+                if taken {
+                    takenTodayMedicationConcepts.append(concept)
+                } else {
+                    toTakeTodayMedicationConcepts.append(concept)
                 }
             }
         } catch {

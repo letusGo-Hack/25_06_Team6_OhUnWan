@@ -50,12 +50,14 @@ final class HealthStore: ObservableObject {
             }
             
             DispatchQueue.main.async {
+
                 self.workouts = workouts.map { workout in
                     Workout(activityName: workout.workoutActivityType.name,
                             startDate: workout.startDate,
                             endDate: workout.endDate,
                             duration: workout.duration,
-                            caloriesBurned: workout.totalEnergyBurned?.doubleValue(for: .kilocalorie()))
+                            caloriesBurned: workout.statistics(for: HKQuantityType(.activeEnergyBurned))?.sumQuantity()?.doubleValue(for: .kilocalorie())
+                    )
                 }
             }
         }
