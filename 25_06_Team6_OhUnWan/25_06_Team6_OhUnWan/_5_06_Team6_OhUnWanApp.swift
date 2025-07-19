@@ -15,11 +15,27 @@ struct _5_06_Team6_OhUnWanApp: App {
 
     @State var triggerMedicationsAuthorization: Bool = false
     @State var healthDataAuthorized: Bool?
+    @State private var selectedTabKind: TabKind = .today
 
     var body: some Scene {
         WindowGroup {
-            TabsView(toggleHealthDataAuthorization: $triggerMedicationsAuthorization,
-                     healthDataAuthorized: $healthDataAuthorized)
+            TabView(selection: $selectedTabKind) {
+                Tab(.todayViewDisplayTitle, systemImage: "calendar.day.timeline.leading", value: TabKind.today) {
+                    NavigationStack {
+                        HealthKitAuthorizationGatedView(authorized: $healthDataAuthorized) {
+                            MedicationListView()
+                                .navigationTitle(.todayViewDisplayTitle)
+                        }
+                    }
+                }
+                Tab(.activityViewDisplayTitle, systemImage: "figure.run", value: TabKind.activity) {
+                    NavigationStack {
+                        HealthKitAuthorizationGatedView(authorized: $healthDataAuthorized) {
+                            ActivityView()
+                        }
+                    }
+                }
+            }
             .onAppear {
                 triggerMedicationsAuthorization.toggle()
             }
@@ -28,15 +44,23 @@ struct _5_06_Team6_OhUnWanApp: App {
                 objectType: .userAnnotatedMedicationType(),
                 trigger: triggerMedicationsAuthorization
             ) { result in
-                Task { @MainActor in
-                    switch result {
-                    case .success:
-                        healthDataAuthorized = true
-                    case .failure(let error):
-                        print("Error when requesting HealthKit read authorizations: \(error)")
-                    }
+                switch result {
+                case .success:
+                    healthDataAuthorized = true
+                case .failure(let error):
+                    print("Error when requesting HealthKit read authorizations: \(error)")
                 }
             }
         }.environment(healthStore)
     }
+}
+
+private enum TabKind: Hashable {
+    case today
+    case activity
+}
+
+extension LocalizedStringKey {
+    static let todayViewDisplayTitle: LocalizedStringKey = "Today"
+    static let activityViewDisplayTitle: LocalizedStringKey = "Activity"
 }

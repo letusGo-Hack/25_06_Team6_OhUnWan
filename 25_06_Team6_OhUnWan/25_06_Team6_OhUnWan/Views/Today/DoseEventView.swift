@@ -91,10 +91,12 @@ struct DoseEventView: View {
             .navigationTitle(Text(annotatedMedicationConcept.name))
             .navigationBarTitleDisplayMode(.inline)
         }
-        .healthDataAccessRequest(store: healthStore.store,
-                                 shareTypes: symptomTypes,
-                                 readTypes: symptomTypes,
-                                 trigger: triggerSymptomAuthorization) { @Sendable result in
+        .healthDataAccessRequest(
+            store: healthStore.store,
+            shareTypes: symptomTypes,
+            readTypes: symptomTypes,
+            trigger: triggerSymptomAuthorization
+        ) { result in
             Task { @MainActor in
                 switch result {
                 case .success:
