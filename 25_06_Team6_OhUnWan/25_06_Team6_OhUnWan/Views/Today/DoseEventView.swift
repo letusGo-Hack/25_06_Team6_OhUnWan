@@ -14,17 +14,9 @@ struct DoseEventView: View {
     @Environment(HealthStore.self) var healthStore
     var annotatedMedicationConcept: AnnotatedMedicationConcept
 
-    @State private var medicationSideEffects: [SymptomModel] = []
     @State private var latestDoseEvent: DoseEventModel?
 
     @State var doseEventProvider: DoseEventProvider
-
-    @State private var triggerSymptomAuthorization: Bool = false
-    @AppStorage("healthSymptomDataAuthorized") private var healthSymptomDataAuthorized: Bool = false
-
-    private let symptomTypes = Set(symptomTypeIdentifiers.compactMap {
-        HKCategoryType.categoryType(forIdentifier: $0)
-    })
 
     var body: some View {
         ScrollView {
@@ -60,51 +52,9 @@ struct DoseEventView: View {
                         .padding(.leading)
                     Spacer()
                 }
-
-                Text("Symptoms")
-                    .font(.title)
-                    .fontDesign(.rounded)
-                    .bold()
-                    .padding(.horizontal)
-                ScrollView {
-                    if $medicationSideEffects.isEmpty {
-                        Text("No Associated Symptoms")
-                            .font(.headline)
-                            .padding(.leading)
-                    } else {
-                        ForEach($medicationSideEffects, id: \.self) { sideEffect in
-                            SymptomView(symptomModel: sideEffect)
-                        }
-                    }
-                }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .onAppear {
-                if healthSymptomDataAuthorized {
-                    /// Provide RxNorm codes.
-                    self.medicationSideEffects = SideEffects.symptoms(for: annotatedMedicationConcept)
-                }
-                // Modifying the trigger initiates the HealthKit data access request.
-                triggerSymptomAuthorization.toggle()
-            }
-            .id(healthSymptomDataAuthorized)
-            .navigationTitle(Text(annotatedMedicationConcept.name))
+            .navigationTitle(annotatedMedicationConcept.name)
             .navigationBarTitleDisplayMode(.inline)
-        }
-        .healthDataAccessRequest(
-            store: healthStore.store,
-            shareTypes: symptomTypes,
-            readTypes: symptomTypes,
-            trigger: triggerSymptomAuthorization
-        ) { result in
-            Task { @MainActor in
-                switch result {
-                case .success:
-                    healthSymptomDataAuthorized = true
-                case .failure(let error):
-                    print("Error when requesting HealthKit read-and-write authorizations: \(error)")
-                }
-            }
         }
     }
 }
