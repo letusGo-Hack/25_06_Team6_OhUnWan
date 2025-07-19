@@ -59,3 +59,8 @@ private enum TabKind: Hashable {
     case medication
     case activity
 }
+
+extension LocalizedStringKey {
+    static let medicationViewDisplayTitle: LocalizedStringKey = "Medication"
+    static let activityViewDisplayTitle: LocalizedStringKey = "Activity"
+}
