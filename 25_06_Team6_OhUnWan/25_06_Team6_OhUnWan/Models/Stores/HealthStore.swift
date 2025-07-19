@@ -19,7 +19,6 @@ final class HealthStore {
     }
 
     var workouts: [Workout] = []
-    var heartRateData: [HeartRate] = []
 
     func requestActivityAuthorization() async -> Bool {
         do {
@@ -70,7 +69,6 @@ final class HealthStore {
         }
         
         self.workouts = workoutData
-        self.heartRateData = [] // Clear the separate heart rate data, as it's no longer needed
     }
 }
 
