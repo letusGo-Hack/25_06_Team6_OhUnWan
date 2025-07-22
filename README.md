@@ -34,9 +34,9 @@
      2. 사용자가 'AI 피드백 받기' 버튼을 누르면 현재 HealthStore에 있는 데이터를 기반으로 FoundationModelsService가 AI 응답을 생성하여 화면에 표시합니다.
 
   요구사항
-   - Xcode 23+
-   - iOS 23+
-   - MacOS 23+ (Foundation Models)
+   - Xcode 26+
+   - iOS 26+
+   - MacOS 26+ (Foundation Models)
 
   실행 방법
    1. 프로젝트를 Xcode에서 엽니다.
